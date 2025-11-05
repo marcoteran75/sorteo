@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteo de 20,000 Pesos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1, h2, h3 {
+            margin: 10px 0;
+        }
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        .number-box {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .number-box.taken {
+            background-color: #ffd700;
+        }
+        .number-box input {
+            width: 80%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        .number-box button {
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .number-box button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sorteo de 20,000 Pesos</h1>
+        <h2>Se celebrará en cuanto se vendan todos los números, ¡cada número cuesta $100!</h2>
+        <h3>Escoge tu número, coloca tu nombre o apodo, dale guardar y coordina la reserva y pago en WhatsApp</h3>
+    </header>
+
+    <div class="number-grid" id="numberGrid"></div>
+
+    <script>
+        // URL del archivo JSON en tu repositorio de GitHub
+        const JSON_URL = 'https://raw.githubusercontent.com/TU_USUARIO/TU_REPOSITORIO/main/numbers.json';
+        const WHATSAPP_GROUP = 'https://chat.whatsapp.com/TU_GRUPO_DE_WHATSAPP'; // Reemplaza con el enlace real del grupo
+
+        // Generar los 300 números
+        const totalNumbers = 300;
+        const numberGrid = document.getElementById('numberGrid');
+        let numbersData = {};
+
+        // Cargar datos desde el archivo JSON
+        async function loadNumbers() {
+            try {
+                const response = await fetch(JSON_URL);
+                numbersData = await response.json();
+                updateNumberGrid();
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                alert('No se pudieron cargar los números. Intenta de nuevo más tarde.');
+            }
+        }
+
+        // Generar la cuadrícula
+        for (let i = 1; i <= totalNumbers; i++) {
+            const number = String(i).padStart(3, '0');
+            const box = document.createElement('div');
+            box.className = 'number-box';
+            box.innerHTML = `
+                <strong>${number}</strong>
+                <input type="text" id="name-${number}" placeholder="Nombre o apodo">
+                <button onclick="saveName('${number}')">Guardar</button>
+            `;
+            numberGrid.appendChild(box);
+        }
+
+        // Guardar nombre (redirigir al grupo de WhatsApp)
+        function saveName(number) {
+            const nameInput = document.getElementById(`name-${number}`);
+            const name = nameInput.value.trim();
+            if (name === '') {
+                alert('Por favor, ingresa un nombre o apodo.');
+                return;
+            }
+            if (numbersData[number]) {
+                alert('Este número ya está reservado.');
+                return;
+            }
+
+            // Redirigir al grupo de WhatsApp con mensaje de reserva
+            const message = encodeURIComponent(`Reserva: Número ${number}, Nombre: ${name}`);
+            window.open(`${WHATSAPP_GROUP}&text=${message}`, '_blank');
+            alert(`Por favor, coordina la reserva y el pago en el grupo de WhatsApp.`);
+        }
+
+        // Actualizar la cuadrícula
+        function updateNumberGrid() {
+            for (let i = 1; i <= totalNumbers; i++) {
+                const number = String(i).padStart(3, '0');
+                const box = document.querySelector(`#name-${number}`).parentElement;
+                const input = box.querySelector(`#name-${number}`);
+                const saveButton = box.querySelector(`#name-${number} + button`);
+
+                if (numbersData[number]) {
+                    box.classList.add('taken');
+                    input.value = numbersData[number].name || numbersData[number]; // Soporta formato simple o con "paid"
+                    input.disabled = true;
+                    saveButton.disabled = true;
+                } else {
+                    box.classList.remove('taken');
+                    input.value = '';
+                    input.disabled = false;
+                    saveButton.disabled = false;
+                }
+            }
+        }
+
+        // Cargar los números al iniciar
+        loadNumbers();
+    </script>
+</body>
+</html>
