@@ -69,7 +69,7 @@
 
     <script>
         // URL del archivo JSON en tu repositorio de GitHub
-        const JSON_URL = 'https://marcoteran75.github.io/sorteo//main/numbers.json';
+        const JSON_URL = 'https://marcoteran75.github.io/sorteo/main/numbers.json';
         const WHATSAPP_GROUP = 'https://chat.whatsapp.com/TU_GRUPO_DE_WHATSAPP'; // Reemplaza con el enlace real del grupo
 
         // Generar los 300 números
@@ -80,8 +80,12 @@
         // Cargar datos desde el archivo JSON
         async function loadNumbers() {
             try {
-                const response = await fetch(JSON_URL);
+                const response = await fetch(`${JSON_URL}?t=${new Date().getTime()}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 numbersData = await response.json();
+                console.log('Datos cargados:', numbersData); // Depuración
                 updateNumberGrid();
             } catch (error) {
                 console.error('Error al cargar datos:', error);
@@ -131,7 +135,7 @@
 
                 if (numbersData[number]) {
                     box.classList.add('taken');
-                    input.value = numbersData[number].name || numbersData[number]; // Soporta formato simple o con "paid"
+                    input.value = numbersData[number].name || numbersData[number];
                     input.disabled = true;
                     saveButton.disabled = true;
                 } else {
@@ -147,5 +151,4 @@
         loadNumbers();
     </script>
 </body>
-
 </html>
