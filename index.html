@@ -56,6 +56,15 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
+        .reload-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
@@ -65,6 +74,7 @@
         <h3>Escoge tu número, coloca tu nombre o apodo, dale guardar y coordina la reserva y pago en WhatsApp</h3>
     </header>
 
+    <button class="reload-button" onclick="loadNumbers()">Recargar números</button>
     <div class="number-grid" id="numberGrid"></div>
 
     <script>
@@ -80,16 +90,18 @@
         // Cargar datos desde el archivo JSON
         async function loadNumbers() {
             try {
-                const response = await fetch(`${JSON_URL}?t=${new Date().getTime()}`);
+                const response = await fetch(`${JSON_URL}?t=${new Date().getTime()}`, {
+                    cache: 'no-store' // Evitar caché
+                });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`Error HTTP: ${response.status}`);
                 }
                 numbersData = await response.json();
                 console.log('Datos cargados:', numbersData); // Depuración
                 updateNumberGrid();
             } catch (error) {
                 console.error('Error al cargar datos:', error);
-                alert('No se pudieron cargar los números. Intenta de nuevo más tarde.');
+                alert('No se pudieron cargar los números. Verifica la conexión o la URL del archivo.');
             }
         }
 
@@ -127,6 +139,7 @@
 
         // Actualizar la cuadrícula
         function updateNumberGrid() {
+            console.log('Actualizando cuadrícula con:', numbersData); // Depuración
             for (let i = 1; i <= totalNumbers; i++) {
                 const number = String(i).padStart(3, '0');
                 const box = document.querySelector(`#name-${number}`).parentElement;
